@@ -1,0 +1,49 @@
+@import "purecss";
+body{
+  font-size:18px;
+  margin:0;
+  background-color: #a7cfdf;
+}
+.container{
+  background-repeat: no-repeat;
+  background-color: #a7cfdf;
+  background: linear-gradient(135deg,  #a7cfdf 0%,#23538a 100%) no-repeat;
+  height:100vh;
+}
+h1{
+  font-size:18px;
+}
+
+
+@media only screen and (min-width :1024px){
+  h1{
+    font-size:3000%;
+    font-family: serif;
+    color: darken(pink, 10%);
+    letter-spacing:-100px;
+    padding:0;
+    line-height:0.02;
+    span{
+      color:white;
+    }
+  }
+
+  .heros-zone{
+    position:relative;
+    background: brown url('../img/cat-o.jpg') center center no-repeat;
+    background-size: cover;
+    height:100vh;
+    h2{
+      text-align: center;
+      font-size:120px;
+      color:white;
+      font-weight:lighter;
+      line-height:100vh;
+    }
+    img{
+      display:block;
+      max-width:100%;
+      margin:auto;
+    }
+  }
+}

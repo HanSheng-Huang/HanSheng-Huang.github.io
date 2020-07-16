@@ -1,37 +1,12 @@
-## Welcome to GitHub Pages
+# PWA Sample project
 
-You can use the [editor on GitHub](https://github.com/HanSheng-Huang/HanSheng-Huang.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This is a working example of a Progressive Web Application (PWA), made using a GitHub page. If done correctly, Android users should see a native invitation to save the website on their homescreen.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+- Visit [the GitHub page](https://pixeline.github.io/pwa-example/index.html) using your mobile phone to test it.
+- Read the short tutorial "[Learn how to turn a website into a Progressive Web App](https://dev.to/pixeline/the-easy-way-to-turn-a-website-into-a-progressive-web-app-77g)" that explains how to set it up.
 
-### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+![](./SOURCES/add-to-homescreen.jpg)
 
-```markdown
-Syntax highlighted code block
+This repository is a boilerplate for junior developers at [BeCode](http://www.becode.org) and anyone wanting to learn more about PWA.
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/HanSheng-Huang/HanSheng-Huang.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
