@@ -1,3 +1,5 @@
+'use strict';
+
 console.log('Hello from sw.js');
 
 
@@ -30,6 +32,7 @@ workbox.routing.registerRoute(
     new RegExp('.*\.css'),
     new workbox.strategies.CacheFirst({
         cacheName: 'css-cache',
+        cacheableResponse: { statuses: [0, 200] }
     })
 );
 
@@ -38,6 +41,7 @@ workbox.routing.registerRoute(
     new RegExp('.*\.(?:png|jpg|jpeg|svg|gif)'),
     new workbox.strategies.CacheFirst({
         cacheName: 'image-cache',
+        cacheableResponse: { statuses: [0, 200] }
     })
 );
 
