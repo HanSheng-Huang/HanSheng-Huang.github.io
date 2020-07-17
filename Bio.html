@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="Get Face">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <Link rel="manifest" href="manifest.json">
+
+    <link href="css/examples.css" rel="stylesheet" type="text/css">
+    <script language="javascript" type="text/javascript" src="js/jquery-3.4.1.js"></script>
+    <script language="javascript" type="text/javascript" src="js/lib/jquery.mousewheel.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.canvaswrapper.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.colorhelpers.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.saturated.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.browser.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.drawSeries.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.uiConstants.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.symbol.js"></script>
+    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.legend.js"></script>
+
+    <style>
+        .demo-title {
+            width: 100%;
+            background: #2e2f33;
+            z-index: 1;
+            padding: .1em 0;
+        }
+
+        .demo-title a {
+            color: #fff;
+            border-bottom: 1px dotted #a64ceb;
+            text-decoration: none;
+        }
+
+        .demo-title p {
+            color: #fff;
+            text-align: center;
+            text-transform: lowercase;
+            font-size: 15px;
+        }
+
+        button#verify {
+            margin: 0 5px 5px 0;
+            width: 60px;
+            height: 30px;
+        }
+
+        button {
+            margin: 10px 5px 5px 10px;
+            width: 110px;
+            height: 40px;
+        }
+
+        video {
+            object-fit: contain;
+            //width: 5px;
+            height: 4px;
+        }
+
+        .results {
+            margin: 5px 10px 5px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background: url(images/bg_EarTV.png);
+            overflow: hidden;
+        }
+
+        .RPPG {
+            width: 400px;
+            height: 100px;
+            position: inherit;
+        }
+
+        .auto-style1 {
+            font-family: Arial;
+            font-size: 32px;
+        }
+    </style>
+
+</head>
+
+<body style="background-image: url(images/bg_EarTV.png);">
+
+    <div class="demo-title">
+        <p>PWA success</p>
+    </div>
+
+
+    <div class="results">
+        <video autoplay playsinline></video>
+    </div>
+
+    <div class="results">
+        <canvas id="canvas_jpg" width="5" height="5" style="border:1px solid">
+    </div>
+
+
+    <div class='results'>
+        <div id="debugFilenameConsole"> </div>
+    </div>
+
+    <div class='results'>
+        <div id="debugWebSocketConsole"> </div>
+    </div>
+
+    <div class='results'>
+        <div id="content" font-size="25px" class="auto-style1"></div>
+    </div>
+    <div class='results'>
+        <div id="rppg" font-size="25px" class="RPPG"></div>
+    </div>
+
+
+    <script src="js/Chart.js"></script>
+    <script src="js/Bio.js"></script>
+
+
+</body>
+
+<script>
+    // Check that service workers are supported
+    if ('serviceWorker' in navigator) {
+        // Use the window load event to keep the page load performant
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js');
+        });
+    }
+</script>
+
+</html>

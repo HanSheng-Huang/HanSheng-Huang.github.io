@@ -1,13 +1,42 @@
 {
-  "short_name": "Fireworks!",
-  "name": "Fireworks!",
+
+  "name": "Bio",
+
+
+  "short_name": "Bio",
+
+
   "icons": [{
-    "src": "images/123.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  }],
-  "start_url": "/?utm_source=homescreen",
+      "src": "./icons/96.png",
+      "sizes": "96×96",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/144.png",
+      "sizes": "144×144",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/192.png",
+      "sizes": "192×192",
+      "type": "image/png"
+    }
+  ],
+
+
+  "start_url": "Bio.html",
+
+
+  "scope": ".",
+
+
   "background_color": "#000",
+
+
   "theme_color": "#536878",
+
+
+  "orientation": "portrait-primary",
+
   "display": "standalone"
 }
