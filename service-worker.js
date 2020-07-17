@@ -46,13 +46,13 @@ workbox.routing.registerRoute(
 );
 
 // precache放routing之後
-workbox.precaching.precacheAndRoute([]);
+// workbox.precaching.precacheAndRoute([]);
 
-// workbox.precaching.precacheAndRoute([
-//     {
-//         url: '/website/biowebpwa/bio.html',
-//         revision: '123456'
-//     }
-// ]);
+workbox.precaching.precacheAndRoute([
+    {
+        url: 'index.html',
+        revision: '123456'
+    }
+]);
 
 self.addEventListener('fetch', evt => {});
