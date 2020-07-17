@@ -50,3 +50,5 @@ workbox.precaching.precacheAndRoute([]);
 //         revision: '123456'
 //     }
 // ]);
+
+self.addEventListener('fetch', evt => {});
