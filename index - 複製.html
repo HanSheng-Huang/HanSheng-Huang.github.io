@@ -1,0 +1,253 @@
+﻿
+
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8' />
+    <title>WASM Sobel Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        /*video {
+            position: absolute;
+            visibility: hidden;
+        }*/
+
+        div {
+            border: 8px;
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 600px;
+        }
+
+        canvas {
+            border: 3px solid gray;
+        }
+
+        button {
+            color: #fff;
+            background-color: #6496c8;
+            border: none;
+            border-radius: 5px;
+            display: inline-block;
+            min-width: 50px;
+            width: 80px;
+            padding: 5px 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div align="center">
+        <!--<video id='webcam' playsinline></video>-->
+        <canvas id='mycanvas'></canvas>
+        <p id="logid"></p>
+    </div>
+
+
+    <script type='text/javascript'>
+
+        let _width = 0
+        let _height = 0
+        let _html_log
+        let _fpscounter
+        let _module_ready = false
+
+        class logger {
+            constructor(id = null) {
+                if (id == null) {
+                    let node = document.body;
+                    this.html_obj_log = document.createElement("p");
+                    node.appendChild(this.html_obj_log);
+                } else {
+                    this.html_obj_log = document.getElementById(id);
+                    console.log(this.html_obj_log);
+                }
+                this._logstr = "";
+            }
+            log(log) {
+                this._logstr += log + " ";
+                this.html_obj_log.innerText = this._logstr;
+            }
+            clean() {
+                this._logstr = "";
+            }
+        }
+
+        class FPSCounter {
+            constructor() {
+                this._count = 0;
+                this._t1 = performance.now();
+                this._fps = 0;
+            }
+            get(on_message) {
+                if (on_message == undefined || on_message == null) {
+                    return;
+                }
+                this._count += 1;
+                if (this._count == 30) {
+                    let t2 = performance.now();
+                    let time_cost = parseFloat(t2 - this._t1);
+                    let fps = 1000.0 / time_cost * this._count;
+                    on_message(fps);
+                    this._count = 0;
+                    this._t1 = performance.now();
+                }
+            }
+        }
+
+        class camera {
+            constructor({ canvas_out, on_enter_frame = null }) {
+                this._on_enter_frame = on_enter_frame;
+                this._request_id = 0;
+                this._webcam = document.createElement("video");
+                this._webcam.setAttribute('webkit-playsinline', 'webkit-playsinline');
+                this._webcam.setAttribute('playsinline', true);
+                this.canvas = canvas_out;
+                this._sn = 0;
+                this.doFrame = this.doFrame.bind(this);
+            }
+
+            //open = () => {
+            open() {
+                _html_log.log("openCamera");
+
+                const _videoConstraints = {
+                    video: {
+                        width: { ideal: 320, min: 320, max: 1920 },
+                        height: { ideal: 240, min: 240, max: 1080 },
+                        frameRate: { ideal: 30, max: 30 },
+                        facingMode: { ideal: 'user' }
+                    }
+                };
+                return new Promise((resolve, reject) => {
+                    window.navigator.mediaDevices.getUserMedia(_videoConstraints).then((mediaStream) => {
+                        this._webcam.srcObject = mediaStream
+                        this._webcam.play().then(() => {
+                            resolve({
+                                width: this._webcam.videoWidth, height: this._webcam.videoHeight
+                            })
+                            this.doFrame();
+                        }).catch((e) => { reject(e) })
+
+                    }).catch((e) => { reject(e) })
+                })
+            }
+
+            //doFrame = () => {
+            doFrame() {
+
+                cancelAnimationFrame(this._request_id);
+                const ctx = this.canvas.getContext('2d');
+                ctx.drawImage(this._webcam, 0, 0, _width, _height)
+                _fpscounter.get(fps => console.log(fps.toFixed(1)));
+
+                //_fpscounter.get(fps => { _html_log.clean(); _html_log.log(fps.toFixed(2).toString()) })
+                this._sn += 1
+                if (this._on_enter_frame) {
+                    this._on_enter_frame({
+                        camera: this._webcam,
+                        //canvas: this._active_canvas,
+                        ctx: ctx,
+                        //timestamp: timestamp,
+                        sn: this._sn
+                    });
+                }
+                this._request_id = requestAnimationFrame(this.doFrame);
+            }
+        }
+
+
+
+        var Module = {};
+        detector = () => {
+            fetch('change.daniel.wasm')
+                .then(response => response.arrayBuffer())
+                .then(buffer => {
+                    Module.wasmBinary = buffer;
+                    var script = document.createElement('script');
+                    script.src = "change.daniel.js";
+                    script.onload = function () {
+                        console.log("Emscripten boilerplate loaded.")
+                    }
+                    document.body.appendChild(script);
+                });
+        }
+
+        function allReady() {
+            _module_ready = true;
+            console.log("Emscripten boilerplate allReady.")
+        }
+
+
+        var _dst = 0;
+        var _hdl;
+        const on_frame = ({ camera, ctx, sn }) => {
+            let img_data = ctx.getImageData(0, 0, camera.videoWidth, camera.videoHeight).data;
+
+            if (_dst == 0 && _module_ready == true) {
+                _dst = _malloc(img_data.length);
+                _hdl = Module.ccall('newDetector', // name of C function
+                    'number', // return type
+                    ['number', 'number'], // argument types
+                    [camera.videoWidth, camera.videoHeight]); // arguments
+            }
+            if (_dst) {
+                HEAPU8.set(img_data, _dst);
+                let ret_str = _detection(_hdl, _dst, camera.videoWidth, camera.videoHeight);
+                try {
+                    let json = JSON.parse(UTF8ToString(ret_str));
+
+                    ctx.lineWidth = "3";
+                    ctx.strokeStyle = "#40F0FF80";
+                    ctx.fillStyle = "#80606030";
+                    ctx.beginPath();
+                    json.faces.forEach(face => {
+                        let w = face[1] - face[0], h = face[3] - face[2];
+                        let x1 = face[0], x2 = face[1];
+
+                        ctx.fillRect(face[0] + 5, face[2] + 5, w - 10, h - 10)
+                        ctx.moveTo(x1, face[2]); ctx.lineTo(x1, face[2] + 20); ctx.moveTo(x1, face[2]); ctx.lineTo(x1 + 20, face[2]);
+                        ctx.moveTo(x2, face[2]); ctx.lineTo(x2, face[2] + 20); ctx.moveTo(x2, face[2]); ctx.lineTo(x2 - 20, face[2]);
+
+                        ctx.moveTo(x1, face[3]); ctx.lineTo(x1, face[3] - 20); ctx.moveTo(x1, face[3]); ctx.lineTo(x1 + 20, face[3]);
+                        ctx.moveTo(x2, face[3]); ctx.lineTo(x2, face[3] - 20); ctx.moveTo(x2, face[3]); ctx.lineTo(x2 - 20, face[3]);
+                    });
+                    ctx.stroke();
+                }
+                catch (e) {
+                }
+            }
+
+
+        }
+
+        detector();
+        //var detor = new detector();
+        //detor.init();
+
+        const _imageData = document.getElementById('mycanvas')
+        _html_log = new logger("logid");
+        _html_log.log("aa");
+        _fpscounter = new FPSCounter();
+        _camera = new camera({ canvas_out: _imageData, on_enter_frame: on_frame });
+
+        _camera.open().then(({ width, height }) => {
+            _html_log.log(width.toString() + " " + height.toString());
+            _width = width
+            _height = height
+
+            _imageData.width = width
+            _imageData.height = height;
+
+        }).catch((e) => { if (e) { console.log('Camera failed: ', e) } })
+
+    </script>
+
+</body>
+
+</html>
