@@ -1,136 +1,281 @@
-﻿<!DOCTYPE html>
+﻿
 
-<html>
+<!DOCTYPE html>
+<html lang='en'>
 
 <head>
-
-    <meta charset="utf-8">
-    <meta name="description" content="Get Face">
-    <meta name="theme-color" content="#536878" />
-    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
-    <Link rel="manifest" href="manifest.json">
-
-    <link href="css/examples.css" rel="stylesheet" type="text/css">
-    <script language="javascript" type="text/javascript" src="js/jquery-3.4.1.js"></script>
-    <script language="javascript" type="text/javascript" src="js/lib/jquery.mousewheel.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.canvaswrapper.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.colorhelpers.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.saturated.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.browser.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.drawSeries.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.uiConstants.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.symbol.js"></script>
-    <script language="javascript" type="text/javascript" src="js/source/jquery.flot.legend.js"></script>
-
+    <meta charset='utf-8' />
+    <title>WASM Sobel Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel='manifest' href='manifest.json'>
     <style>
-        .demo-title {
-            width: 100%;
-            background: #2e2f33;
-            z-index: 1;
-            padding: .1em 0;
+        /*video {
+            position: absolute;
+            visibility: hidden;
+        }*/
+
+        div {
+            border: 8px;
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 600px;
         }
 
-        .demo-title a {
-            color: #fff;
-            border-bottom: 1px dotted #a64ceb;
-            text-decoration: none;
-        }
-
-        .demo-title p {
-            color: #fff;
-            text-align: center;
-            text-transform: lowercase;
-            font-size: 15px;
-        }
-
-        button#verify {
-            margin: 0 5px 5px 0;
-            width: 60px;
-            height: 30px;
+        canvas {
+            border: 3px solid gray;
         }
 
         button {
-            margin: 10px 5px 5px 10px;
-            width: 110px;
-            height: 40px;
-        }
-
-        video {
-            object-fit: contain;
-            //width: 5px;
-            height: 4px;
-        }
-
-        .results {
-            margin: 5px 10px 5px 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            background: url(images/bg_EarTV.png);
-            overflow: hidden;
-        }
-
-        .RPPG {
-            width: 400px;
-            height: 100px;
-            position: inherit;
-        }
-
-        .auto-style1 {
-            font-family: Arial;
-            font-size: 32px;
+            color: #fff;
+            background-color: #6496c8;
+            border: none;
+            border-radius: 5px;
+            display: inline-block;
+            min-width: 50px;
+            width: 80px;
+            padding: 5px 10px;
         }
     </style>
 
 </head>
 
-<body style="background-image: url(images/bg_EarTV.png);">
-
-    <div class="demo-title">
-        <p>PWA offline</p>
+<body>
+    <div align="center">
+        <!--<video id='webcam' playsinline></video>-->
+        <canvas id='mycanvas'></canvas>
+        <p id="logid"></p>
     </div>
+    <!--<script src='change.daniel.js'></script>-->
+    <script type='text/javascript'>
+
+        let _width = 0
+        let _height = 0
+        let _html_log
+        let _fpscounter
+        let _module_ready = false
+
+        class logger {
+            constructor(id = null) {
+                if (id == null) {
+                    let node = document.body;
+                    this.html_obj_log = document.createElement("p");
+                    node.appendChild(this.html_obj_log);
+                } else {
+                    this.html_obj_log = document.getElementById(id);
+                    console.log(this.html_obj_log);
+                }
+                this._logstr = "";
+            }
+            log(log) {
+                this._logstr += log + " ";
+                this.html_obj_log.innerText = this._logstr;
+            }
+            clean() {
+                this._logstr = "";
+            }
+        }
+
+        class FPSCounter {
+            constructor() {
+                this._count = 0;
+                this._t1 = performance.now();
+                this._fps = 0;
+            }
+            get(on_message) {
+                if (on_message == undefined || on_message == null) {
+                    return;
+                }
+                this._count += 1;
+                if (this._count == 30) {
+                    let t2 = performance.now();
+                    let time_cost = parseFloat(t2 - this._t1);
+                    let fps = 1000.0 / time_cost * this._count;
+                    on_message(fps);
+                    this._count = 0;
+                    this._t1 = performance.now();
+                }
+            }
+        }
+
+        var start = 0;
 
 
-    <div class="results">
-        <video autoplay playsinline></video>
-    </div>
+        class camera {
+            constructor({ canvas_out, on_enter_frame = null }) {
+                this._on_enter_frame = on_enter_frame;
+                this._request_id = 0;
+                this._webcam = document.createElement("video");
+                this._webcam.setAttribute('webkit-playsinline', 'webkit-playsinline');
+                this._webcam.setAttribute('playsinline', true);
+                this.canvas = canvas_out;
+                this._sn = 0;
+                this.doFrame = this.doFrame.bind(this);
+            }
 
-    <div class="results">
-        <canvas id="canvas_jpg" width="5" height="5" style="border:1px solid">
-    </div>
+            //open = () => {
+            open() {
+                _html_log.log("openCamera");
+
+                const _videoConstraints = {
+                    video: {
+                        width: { ideal: 320, min: 320, max: 1920 },
+                        height: { ideal: 240, min: 240, max: 1080 },
+                        frameRate: { ideal: 30, max: 30 },
+                        facingMode: { ideal: 'user' }
+                    }
+                };
+                return new Promise((resolve, reject) => {
+                    window.navigator.mediaDevices.getUserMedia(_videoConstraints).then((mediaStream) => {
+                        this._webcam.srcObject = mediaStream
+                        this._webcam.play().then(() => {
+                            resolve({
+                                width: this._webcam.videoWidth, height: this._webcam.videoHeight
+                            })
+                            this.doFrame();
+                        }).catch((e) => { reject(e) })
+
+                    }).catch((e) => { reject(e) })
+                })
+            }
+
+            //doFrame = () => {
+            doFrame(timestamp) {
+
+                if ((timestamp - start) > 17) {
+                    //console.log((timestamp - start).toFixed(1));
+                    start = timestamp;
+
+                    cancelAnimationFrame(this._request_id);
+                    const ctx = this.canvas.getContext('2d');
+                    ctx.drawImage(this._webcam, 0, 0, _width, _height)
+                    //_fpscounter.get(fps => console.log(fps.toFixed(1)));
+
+                    //_fpscounter.get(fps => { _html_log.clean(); _html_log.log(fps.toFixed(2).toString()) })
+                    this._sn += 1
+                    if (this._on_enter_frame) {
+                        this._on_enter_frame({
+                            camera: this._webcam,
+                            //canvas: this._active_canvas,
+                            ctx: ctx,
+                            //timestamp: timestamp,
+                            sn: this._sn
+                        });
+                    }
+                }
+                this._request_id = requestAnimationFrame(this.doFrame);
+            }
+        }
 
 
-    <div class='results'>
-        <div id="debugFilenameConsole"> </div>
-    </div>
+        var Module_FD = {};
+        detector = () => {
+            fetch('change.daniel.wasm')
+                .then(response => response.arrayBuffer())
+                .then(buffer => {
+                    Module_FD.wasmBinary = buffer;
+                    var script = document.createElement('script');
+                    script.src = "change.daniel.js";
+                    script.onload = function () {
+                        console.log("Emscripten boilerplate loaded.")
+                    }
+                    document.body.appendChild(script);
+                });
+        }
 
-    <div class='results'>
-        <div id="debugWebSocketConsole"> </div>
-    </div>
+        detector();
 
-    <div class='results'>
-        <div id="content" font-size="25px" class="auto-style1"></div>
-    </div>
-    <div class='results'>
-        <div id="rppg" font-size="25px" class="RPPG"></div>
-    </div>
+        function allReady() {
+            _module_ready = true;
+            console.log("Emscripten boilerplate allReady.")
+        }
 
 
-    <script src="js/Chart.js"></script>
-    <script src="js/Bio.js"></script>
+        var _dst = 0;
+        var _hdl = 0;
+        const on_frame = ({ camera, ctx, sn }) => {
+
+           
+
+            let img_data = ctx.getImageData(0, 0, camera.videoWidth, camera.videoHeight).data;
+
+            if (_dst == 0 && _module_ready == true) {
+                _dst = _malloc(img_data.length);
+
+                _hdl = Module_FD.ccall('newDetector', // name of C function
+                    'number', // return type
+                    ['number', 'number'], // argument types
+                    [camera.videoWidth, camera.videoHeight]); // arguments
+            }
+            if (_dst) {
+                HEAPU8.set(img_data, _dst);
+                let t0 = performance.now();
+                //let ret_str = _detection(_hdl, _dst, camera.videoWidth, camera.videoHeight);
+                //let str = UTF8ToString(ret_str);
+                let ret_str = Module.ccall('detection', // name of C function
+                    'string', // return type
+                    ['number', 'number', 'number', 'number'], // argument types
+                    [_hdl, _dst, camera.videoWidth, camera.videoHeight]); // arguments
 
 
-</body>
+
+                // console.log("tim:" + (performance.now() - t0).toFixed(2)+ " " + str);
+                // console.log("tim:" + (performance.now() - t0).toFixed(2)+ " " + (ret_str));
+
+                try {
+                    let json = JSON.parse((ret_str));
+
+                    ctx.lineWidth = "2";
+                    ctx.strokeStyle = "#40F0FF80";
+                    ctx.fillStyle = "#808000ff";
+                    ctx.font = '30px serif';
+                    
+                    json.faces.forEach(face => {
+                        roi = face.roi;
+                                                
+                        ctx.fillStyle = "#80606000";
+                        ctx.beginPath();
+
+                        let w = roi[1] - roi[0], h = roi[3] - roi[2];
+                        let x1 = roi[0], x2 = roi[1];
+
+                        ctx.fillRect(roi[0] + 5, roi[2] + 5, w - 10, h - 10)
+                        ctx.moveTo(x1, roi[2]); ctx.lineTo(x1, roi[2] + 20); ctx.moveTo(x1, roi[2]); ctx.lineTo(x1 + 20, roi[2]);
+                        ctx.moveTo(x2, roi[2]); ctx.lineTo(x2, roi[2] + 20); ctx.moveTo(x2, roi[2]); ctx.lineTo(x2 - 20, roi[2]);
+
+                        ctx.moveTo(x1, roi[3]); ctx.lineTo(x1, roi[3] - 20); ctx.moveTo(x1, roi[3]); ctx.lineTo(x1 + 20, roi[3]);
+                        ctx.moveTo(x2, roi[3]); ctx.lineTo(x2, roi[3] - 20); ctx.moveTo(x2, roi[3]); ctx.lineTo(x2 - 20, roi[3]);
+                        ctx.stroke();
+                    });
+                    
+                }
+                catch (e) {
+                    //console.log("error json format:");
+                }
+
+                _fpscounter.get(fps => { _html_log.clean(); _html_log.log(fps.toFixed(2).toString()) })
+            }
+        }
+
+        const _imageData = document.getElementById('mycanvas')
+        _html_log = new logger("logid");
+        _html_log.log("aa");
+        _fpscounter = new FPSCounter();
+        _camera = new camera({ canvas_out: _imageData, on_enter_frame: on_frame });
+
+        _camera.open().then(({ width, height }) => {
+            _html_log.log(width.toString() + " " + height.toString());
+            _width = width
+            _height = height
+
+            _imageData.width = width
+            _imageData.height = height;
+
+        }).catch((e) => { if (e) { console.log('Camera failed: ', e) } })
+
+    </script>
 
 <script>
     // Check that service workers are supported
@@ -171,5 +316,7 @@
   }
 
 </script>
+
+</body>
 
 </html>
