@@ -28,6 +28,11 @@ workbox.routing.registerRoute(
     new workbox.strategies.CacheFirst({})
 );
 
+workbox.routing.registerRoute(
+  new RegExp('.*\.wasm'),
+  new workbox.strategies.CacheFirst({})
+);
+
 // 存任何的css
 workbox.routing.registerRoute(
     new RegExp('.*\.css'),
