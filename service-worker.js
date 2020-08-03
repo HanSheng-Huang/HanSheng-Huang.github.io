@@ -60,7 +60,7 @@ workbox.routing.registerRoute(
 
 workbox.precaching.precacheAndRoute([{
     url: 'index.html',
-    revision: '123456'
+    revision: '1234567'
 }]);
 
 
