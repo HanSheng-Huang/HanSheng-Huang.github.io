@@ -5,7 +5,8 @@ console.log('Hello from sw.js');
 
 
 // 引用workbox build
-importScripts('./js/workbox-sw');
+// importScripts('./js/workbox-sw');
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.3/workbox-sw.js');
 
 
 workbox.setConfig({
