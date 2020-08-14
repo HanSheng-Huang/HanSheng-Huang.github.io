@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="description" content="Get Face">
+	<meta name="theme-color" content="#536878" />
+	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png">
+	<Link rel="manifest" href="manifest.json">
+	<link href="css/default.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="css/fonts.css" rel="stylesheet" type="text/css" media="all" />
+
+	<!--[if IE 6]><link href="default_ie6.css" rel="stylesheet" type="text/css" /><![endif]-->
+
+	<div id="menu">
+		<ul>
+			<li><a accesskey="3" title="" id="about">About</a></li>
+		</ul>
+	</div>
+
+	<title></title>
+
+</head>
+
+<body>
+	<div id="page">
+		<div class="container">
+			<div class="box">
+				<div class="tip">
+					<p id="p1"></p>
+				</div>
+				<button type="button" id="enrollfaceslist" class="buttonAction">獲取<br>已註冊人臉</button>
+				<button type="button" id="livefaceslist" class="buttonAction">獲取<br>畫面中人臉</button>
+				<button type="button" id="modebio" class="buttonAction">切換<br>量測模式</button>
+				<button type="button" id="modeenroll" class="buttonAction">切換<br>註冊模式</button>
+			</div>
+		</div>
+
+		<div class="people">
+
+		</div>
+
+		<template id="template">
+
+			<div class="container">
+				<div class="box">
+					<img src="images/pic04.jpg" class="img" id="img" width="100" height="100" alt="" />
+					<div class="details" id="txt"></div>
+
+					<button type="button" id="btnenroll" class="button">enroll</button>
+					<button type="button" id="btnmodify" class="button">modify</button>
+					<button type="button" id="btndelete" class="button">delete</button>
+					<button type="button" id="btnDetail" class="button">__</button>
+
+
+				</div>
+			</div>
+		</template>
+
+	</div>
+	</div>
+
+	<script>
+		// Check that service workers are supported
+		if ('serviceWorker' in navigator) {
+			// Use the window load event to keep the page load performant
+			window.addEventListener('load', () => {
+				navigator.serviceWorker.register('./service-worker.js');
+			});
+		}
+	
+	
+	  let deferredPrompt;
+	  window.addEventListener('beforeinstallprompt', (e) => {
+	    // 預防一開始 Google 跳出提醒視窗
+	    // e.preventDefault();
+	    // 把跳出視窗儲存
+	    deferredPrompt = e;
+	  });
+	  // 偵測是否安裝
+	  window.addEventListener('appinstalled', (evt) => {
+	    console.log('a2hs installed');
+	  });
+	
+	  function myFunction() {
+	    // Show the prompt 跳出提醒視窗
+	    deferredPrompt.prompt();
+	    // Wait for the user to respond to the prompt
+	    // 了解使用者的選擇
+	    deferredPrompt.userChoice
+	      .then((choiceResult) => {
+	        if (choiceResult.outcome === 'accepted') {
+	          console.log('User accepted the A2HS prompt');
+	        } else {
+	          console.log('User dismissed the A2HS prompt');
+	        }
+	        deferredPrompt = null;
+	      });
+	  }
+	
+	</script>
+
+
+	<script src="js/jquery-3.4.1.js"></script>
+	<script src="js/main.js"></script>
+	<script src="js/sweetalert.min.js"></script>
+</body>
+
+</html>
