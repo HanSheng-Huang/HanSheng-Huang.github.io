@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+
+    <title></title>
+</head>
+
+<body>
+    <form id="uploadFile" enctype="multipart/form-data">
+        檔案:<input id="file" type="file" name="file" multiple="multiple"/>
+    </form>
+
+    <button id="upload">上傳檔案</button>
+    <button id="download">下載Log File</button>
+    
+    <script src="js/jquery.fileDownload.js"></script>
+</body>
+<script type="text/javascript">
+    $(function () {
+        $("#upload").click(function () {
+
+            var cmd = "/sys.cgi?cmd=upload";
+            var formData = new FormData($('#uploadFile')[0]);
+
+            $.ajax({
+                type: 'post',
+                url: "http://192.168.77.162:8080"+cmd,
+                // url:self.location.origin+cmd,
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+            }).success(function () {
+                alert("Success");
+            }).error(function () {
+                alert("Fail");
+            });
+        });
+    });
+
+    $(function () {
+        $("#download").click(function (e) {
+            // e.preventDefault();  //stop the browser from following
+            // var cmd = "/sys.cgi?cmd=download";
+            // window.location.href = "http://192.168.77.162:8080"+cmd;
+
+            $(document).on("click", "a.fileDownloadSimpleRichExperience", function () {
+    $.fileDownload($(this).prop("http://192.168.77.162:8080"+cmd), {
+        preparingMessageHtml: "We are preparing your report, please wait...",
+        failMessageHtml: "There was a problem generating your report, please try again."
+    });
+    return false; //this is critical to stop the click event which will trigger a normal file download!
+});
+        });
+    });
+
+    
+
+
+</script>
+
+</html>
