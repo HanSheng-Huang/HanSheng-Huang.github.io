@@ -140,7 +140,7 @@ $(function() {
 function Send(cmd) {
     $.ajax({
         // url: self.location.origin + cmd, //請求的url地址
-        url:"https://192.168.88.100:4433"+cmd,
+        url:"http://192.168.88.100:8080"+cmd,
         dataType: "json", //返回格式為json
         async: true, //請求是否非同步，預設為非同步，這也是ajax重要特性
         // data: { "id": "value" }, //引數值
